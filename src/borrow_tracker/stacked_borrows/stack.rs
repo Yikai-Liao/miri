@@ -43,6 +43,12 @@ pub struct Stack {
 
 impl Stack {
     pub fn retain(&mut self, tags: &FxHashSet<BorTag>) {
+        // The bottom-most tag is never considered for removal, so a stack of length <= 1 cannot
+        // change here. This is the common case, so skip the whole scan.
+        if self.borrows.len() <= 1 {
+            return;
+        }
+
         let mut first_removed = None;
 
         // We never consider removing the bottom-most tag. For stacks without an unknown
@@ -80,6 +86,12 @@ impl Stack {
             read_idx += 1;
         }
         self.borrows.truncate(write_idx);
+        // `truncate` does not shrink the allocation, and there is one stack per tracked range, so
+        // an over-allocated stack here is multiplied by the number of ranges of the allocation.
+        // The GC is exactly the point where we should give that memory back.
+        if self.borrows.capacity() > 16 && self.borrows.len() * 4 < self.borrows.capacity() {
+            self.borrows.shrink_to_fit();
+        }
 
         #[cfg(not(feature = "stack-cache"))]
         let _unused = first_removed; // This is only needed for the stack-cache
