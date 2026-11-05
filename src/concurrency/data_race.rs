@@ -1220,11 +1220,11 @@ impl VClockAlloc {
         ty: Option<Ty<'_>>,
         machine: &MiriMachine<'_>,
     ) -> InterpResult<'tcx> {
-        let current_span = machine.current_user_relevant_span();
         let global = machine.data_race.as_vclocks_ref().unwrap();
         if !global.race_detecting() {
             return interp_ok(());
         }
+        let current_span = machine.current_user_relevant_span();
         let (index, mut thread_clocks) = global.active_thread_state_mut(&machine.threads);
         let mut alloc_ranges = self.alloc_ranges.borrow_mut();
         for (mem_clocks_range, mem_clocks) in
@@ -1265,11 +1265,11 @@ impl VClockAlloc {
         ty: Option<Ty<'_>>,
         machine: &MiriMachine<'_>,
     ) -> InterpResult<'tcx> {
-        let current_span = machine.current_user_relevant_span();
         let global = machine.data_race.as_vclocks_ref().unwrap();
         if !global.race_detecting() {
             return interp_ok(());
         }
+        let current_span = machine.current_user_relevant_span();
         let (index, mut thread_clocks) = global.active_thread_state_mut(&machine.threads);
         for (mem_clocks_range, mem_clocks) in
             self.alloc_ranges.borrow_mut().iter_mut(access_range.start, access_range.size)
@@ -1322,11 +1322,11 @@ impl Default for LocalClocks {
 
 impl FrameState {
     pub fn local_write(&self, local: mir::Local, storage_live: bool, machine: &MiriMachine<'_>) {
-        let current_span = machine.current_user_relevant_span();
         let global = machine.data_race.as_vclocks_ref().unwrap();
         if !global.race_detecting() {
             return;
         }
+        let current_span = machine.current_user_relevant_span();
         let (index, mut thread_clocks) = global.active_thread_state_mut(&machine.threads);
         // This should do the same things as `MemoryCellClocks::write_race_detect`.
         if !current_span.is_dummy() {
@@ -1352,11 +1352,11 @@ impl FrameState {
     }
 
     pub fn local_read(&self, local: mir::Local, machine: &MiriMachine<'_>) {
-        let current_span = machine.current_user_relevant_span();
         let global = machine.data_race.as_vclocks_ref().unwrap();
         if !global.race_detecting() {
             return;
         }
+        let current_span = machine.current_user_relevant_span();
         let (index, mut thread_clocks) = global.active_thread_state_mut(&machine.threads);
         // This should do the same things as `MemoryCellClocks::read_race_detect`.
         if !current_span.is_dummy() {
